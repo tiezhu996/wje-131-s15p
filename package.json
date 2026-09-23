@@ -1,0 +1,13 @@
+{
+  "name": "construction-tracker",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Full-stack construction project progress tracking platform.",
+  "scripts": {
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "typecheck": "npm --prefix backend run typecheck && npm --prefix frontend run typecheck"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
