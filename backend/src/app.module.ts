@@ -18,6 +18,8 @@ import { ProjectRoutesModule } from './routes/project.routes';
 import { SubTaskRoutesModule } from './routes/subTask.routes';
 import { TaskPhaseRoutesModule } from './routes/taskPhase.routes';
 import { SeedService } from './services/seed.service';
+import { AuditService } from './services/audit.service';
+import { ProgressService } from './services/progress.service';
 
 @Module({
   imports: [
@@ -30,7 +32,7 @@ import { SeedService } from './services/seed.service';
     MaterialRoutesModule,
     AuditRoutesModule
   ],
-  providers: [SeedService]
+  providers: [SeedService, ProgressService, AuditService]
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

@@ -39,7 +39,12 @@ export class TaskPhaseService {
     if (!phase) {
       throw new NotFoundException('任务阶段不存在');
     }
-    phase.status = blocked ? PhaseStatus.Blocked : PhaseStatus.InProgress;
+    // 解除阻塞时按当前进度恢复状态：已全部完成的回到 Completed，避免与自动重算结果打架
+    phase.status = blocked
+      ? PhaseStatus.Blocked
+      : phase.percentComplete >= 100
+        ? PhaseStatus.Completed
+        : PhaseStatus.InProgress;
     const updated = await this.phaseRepository.save(phase);
     await this.auditService.record(blocked ? 'phase.block' : 'phase.unblock', 'TaskPhase', id, actorId);
     return updated;

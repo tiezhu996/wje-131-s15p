@@ -8,6 +8,7 @@ import { SubTask } from '../models/subTask.entity';
 import { TaskPhase } from '../models/taskPhase.entity';
 import { User } from '../models/user.entity';
 import { MaterialUnit, PhaseStatus, Priority, ProjectStatus, TaskStatus, UserRole } from '../types/enums';
+import { ProgressService } from './progress.service';
 
 @Injectable()
 export class SeedService implements OnModuleInit {
@@ -17,7 +18,8 @@ export class SeedService implements OnModuleInit {
     @InjectRepository(TaskPhase) private readonly phaseRepository: Repository<TaskPhase>,
     @InjectRepository(SubTask) private readonly taskRepository: Repository<SubTask>,
     @InjectRepository(Material) private readonly materialRepository: Repository<Material>,
-    @InjectRepository(MaterialUsage) private readonly usageRepository: Repository<MaterialUsage>
+    @InjectRepository(MaterialUsage) private readonly usageRepository: Repository<MaterialUsage>,
+    private readonly progressService: ProgressService
   ) {}
 
   async onModuleInit() {
@@ -192,5 +194,8 @@ export class SeedService implements OnModuleInit {
         purpose: '加固施工临边支撑'
       }
     ]);
+
+    // 种子数据落库后按统一规则校准阶段/项目进度，保证看板、甘特图、总览初始即显示同一组数值
+    await this.progressService.recalcAll(users[3].id);
   }
 }

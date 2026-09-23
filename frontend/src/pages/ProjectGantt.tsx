@@ -52,6 +52,7 @@ export function ProjectGantt() {
                       <StatusBadge value={phase.status} />
                       <UserAvatar name={phase.owner?.name} />
                     </Space>
+                    <ProgressBar value={phase.percentComplete} size="small" />
                   </div>
                   <div className="gantt-track" aria-label={`${phase.name} 时间线`}>
                     <div className="gantt-bar" style={{ left: `${style.left}%`, width: `${style.width}%` }} />
