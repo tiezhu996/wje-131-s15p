@@ -8,6 +8,7 @@ import { SubTask } from '../models/subTask.entity';
 import { TaskPhase } from '../models/taskPhase.entity';
 import { User } from '../models/user.entity';
 import { MaterialUnit, PhaseStatus, Priority, ProjectStatus, TaskStatus, UserRole } from '../types/enums';
+import { ProgressService } from './progress.service';
 
 @Injectable()
 export class SeedService implements OnModuleInit {
@@ -17,7 +18,8 @@ export class SeedService implements OnModuleInit {
     @InjectRepository(TaskPhase) private readonly phaseRepository: Repository<TaskPhase>,
     @InjectRepository(SubTask) private readonly taskRepository: Repository<SubTask>,
     @InjectRepository(Material) private readonly materialRepository: Repository<Material>,
-    @InjectRepository(MaterialUsage) private readonly usageRepository: Repository<MaterialUsage>
+    @InjectRepository(MaterialUsage) private readonly usageRepository: Repository<MaterialUsage>,
+    private readonly progressService: ProgressService
   ) {}
 
   async onModuleInit() {
@@ -123,6 +125,16 @@ export class SeedService implements OnModuleInit {
         status: TaskStatus.Review
       },
       {
+        phaseId: phases[1].id,
+        name: '柱墙定位放线',
+        description: '三层主控轴线与墙柱边线放样并报验',
+        ownerId: users[2].id,
+        estimatedHours: '66.00',
+        actualHours: '60.00',
+        status: TaskStatus.Done,
+        completedAt: '2026-06-10'
+      },
+      {
         phaseId: phases[2].id,
         name: '加固节点图纸会审',
         description: '等待设计院确认节点变更',
@@ -130,6 +142,16 @@ export class SeedService implements OnModuleInit {
         estimatedHours: '10.00',
         actualHours: '6.00',
         status: TaskStatus.Todo
+      },
+      {
+        phaseId: phases[2].id,
+        name: '钢梁连接板更换',
+        description: '锈蚀连接板拆除更换并完成探伤',
+        ownerId: users[2].id,
+        estimatedHours: '7.25',
+        actualHours: '7.50',
+        status: TaskStatus.Done,
+        completedAt: '2026-05-20'
       }
     ]);
 
@@ -192,5 +214,8 @@ export class SeedService implements OnModuleInit {
         purpose: '加固施工临边支撑'
       }
     ]);
+
+    // 种子数据落库后按同一套工时占比/工期加权规则重算阶段与项目进度，保证演示数据自洽
+    await this.progressService.recalcAll(1);
   }
 }

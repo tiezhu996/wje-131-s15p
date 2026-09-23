@@ -17,6 +17,7 @@ import { MaterialRoutesModule } from './routes/material.routes';
 import { ProjectRoutesModule } from './routes/project.routes';
 import { SubTaskRoutesModule } from './routes/subTask.routes';
 import { TaskPhaseRoutesModule } from './routes/taskPhase.routes';
+import { ProgressModule } from './services/progress.module';
 import { SeedService } from './services/seed.service';
 
 @Module({
@@ -24,6 +25,7 @@ import { SeedService } from './services/seed.service';
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot(databaseConfig()),
     TypeOrmModule.forFeature([User, Project, TaskPhase, SubTask, Material, MaterialUsage, AuditLog]),
+    ProgressModule,
     ProjectRoutesModule,
     TaskPhaseRoutesModule,
     SubTaskRoutesModule,

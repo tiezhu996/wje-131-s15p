@@ -13,7 +13,7 @@ const columns = [TaskStatus.Todo, TaskStatus.InProgress, TaskStatus.Review, Task
 
 export function TaskBoard() {
   const id = Number(useParams().id || 1);
-  const { project } = useProject(id);
+  const { project, refresh } = useProject(id);
   const { tasks, loadPhases } = useTaskStore();
 
   useEffect(() => {
@@ -22,7 +22,9 @@ export function TaskBoard() {
 
   const moveTask = async (taskId: number, status: TaskStatus) => {
     await subTaskApi.updateStatus(taskId, status);
-    await loadPhases(id);
+    // 状态变更后阶段与项目进度由后端按工时占比/工期加权统一重算，
+    // 这里同时刷新看板与项目数据，保证看板、甘特图、项目总览显示同一组数值
+    await Promise.all([loadPhases(id), refresh()]);
   };
 
   return (

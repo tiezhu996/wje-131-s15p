@@ -4,12 +4,14 @@ import { Repository } from 'typeorm';
 import { SubTask } from '../models/subTask.entity';
 import { TaskStatus } from '../types/enums';
 import { AuditService } from './audit.service';
+import { ProgressService } from './progress.service';
 
 @Injectable()
 export class SubTaskService {
   constructor(
     @InjectRepository(SubTask) private readonly taskRepository: Repository<SubTask>,
-    private readonly auditService: AuditService
+    private readonly auditService: AuditService,
+    private readonly progressService: ProgressService
   ) {}
 
   async findByPhase(phaseId: number) {
@@ -19,6 +21,8 @@ export class SubTaskService {
   async create(payload: Partial<SubTask>, actorId = 1) {
     const task = await this.taskRepository.save(this.taskRepository.create(payload));
     await this.auditService.record('subtask.create', 'SubTask', task.id, actorId, payload);
+    // 新增子任务会改变阶段总工时基数，需同步重算阶段与项目进度
+    await this.progressService.recalcFromPhase(task.phaseId, actorId);
     return task;
   }
 
@@ -27,10 +31,22 @@ export class SubTaskService {
     if (!task) {
       throw new NotFoundException('子任务不存在');
     }
+
+    // 幂等：重复提交同一状态不重复落库、不再次改变进度
+    if (task.status === status) {
+      return task;
+    }
+
+    const previousStatus = task.status;
     task.status = status;
     task.completedAt = status === TaskStatus.Done ? new Date().toISOString().slice(0, 10) : null;
     const updated = await this.taskRepository.save(task);
-    await this.auditService.record('subtask.status.update', 'SubTask', id, actorId, { status });
+    await this.auditService.record('subtask.status.update', 'SubTask', id, actorId, {
+      from: previousStatus,
+      to: status
+    });
+    // 按已完成子任务预计工时占比重算阶段进度，并联动汇总项目进度
+    await this.progressService.recalcFromPhase(task.phaseId, actorId);
     return updated;
   }
 
